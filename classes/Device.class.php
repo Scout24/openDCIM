@@ -2187,6 +2187,10 @@ class Device {
 				continue;
 			}
 
+			// PHP has Issues with locales and float conversion. Switch to sane default
+			$current_locale=setlocale(LC_ALL, 0);
+			setlocale(LC_ALL, 'C');
+			
 			$temp=($t->TemperatureOID)?floatval(self::OSS_SNMP_Lookup($dev,null,"$t->TemperatureOID")):0;
 			$humidity=($t->HumidityOID)?floatval(self::OSS_SNMP_Lookup($dev,null,"$t->HumidityOID")):0;
 			// Strip out everything but numbers
@@ -2211,6 +2215,9 @@ class Device {
 			$temp=number_format($temp, 2, '.', '');
 			$humidity=number_format($humidity, 2, '.', '');
 
+			// Revert locale to the original
+			setlocale(LC_ALL, $current_locale);
+			
 			// No need for any further sanitization it was all handled above
 			$insertsql="INSERT INTO fac_SensorReadings SET DeviceID=$dev->DeviceID, 
 				Temperature=$temp, Humidity=$humidity, LastRead=NOW() ON DUPLICATE KEY 
